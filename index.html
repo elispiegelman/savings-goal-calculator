@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Plan your savings with a simple calculator. See how monthly contributions and compound interest can help you reach your goal.">
+  <meta property="og:title" content="Savings Goal Calculator">
+  <meta property="og:description" content="See how your savings can grow over time with monthly contributions and compound interest.">
+  <title>Savings Goal Calculator</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c7c68'/%3E%3Cpath d='M16 43h32M20 38V28m12 10V20m12 18V13' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="page-header">
+      <p class="eyebrow">Plan with confidence</p>
+      <h1>Savings Goal Calculator</h1>
+      <p class="intro">See how steady saving and compound interest can add up over time.</p>
+    </header>
+
+    <section class="calculator-card" aria-labelledby="inputs-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="inputs-heading">Your savings plan</h2>
+          <p>Adjust your details to see your results update.</p>
+        </div>
+      </div>
+
+      <div class="mode-switch" role="group" aria-label="Calculator mode">
+        <button class="mode-button is-active" type="button" data-mode="monthly" aria-pressed="true">
+          I know my monthly savings
+        </button>
+        <button class="mode-button" type="button" data-mode="goal" aria-pressed="false">
+          I have a savings goal
+        </button>
+      </div>
+
+      <div class="input-grid">
+        <div class="field">
+          <label for="startingAmount">Starting amount</label>
+          <div class="input-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input id="startingAmount" type="number" min="0" step="0.01" value="1000" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field" id="monthlyField">
+          <label for="monthlyContribution">Monthly contribution</label>
+          <div class="input-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input id="monthlyContribution" type="number" min="0" step="0.01" value="200" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field" id="goalField" hidden>
+          <label for="goalAmount">Savings goal</label>
+          <div class="input-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input id="goalAmount" type="number" min="0.01" step="0.01" value="50000" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="annualReturn">Annual return</label>
+          <div class="input-wrap">
+            <input id="annualReturn" type="number" min="0" step="0.01" value="7" inputmode="decimal">
+            <span class="input-suffix" aria-hidden="true">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="years">Number of years</label>
+          <div class="input-wrap">
+            <input id="years" type="number" min="1" max="100" step="1" value="10" inputmode="numeric">
+            <span class="input-suffix">years</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="privacy-note">Your calculations stay in your browser. Nothing is saved or sent.</p>
+      <p class="error-message" id="errorMessage" role="alert" hidden></p>
+    </section>
+
+    <section class="results-section" aria-labelledby="results-heading" aria-live="polite">
+      <h2 class="sr-only" id="results-heading">Your results</h2>
+
+      <div class="result-grid">
+        <article class="result-card result-card-primary" id="monthlyResultCard" hidden>
+          <p class="result-label">Monthly contribution needed</p>
+          <p class="result-value" id="monthlyNeeded">$0.00</p>
+          <p class="result-caption">To reach your savings goal</p>
+        </article>
+        <article class="result-card">
+          <p class="result-label">Final balance</p>
+          <p class="result-value" id="finalBalance">$0.00</p>
+          <p class="result-caption" id="finalCaption">After 10 years</p>
+        </article>
+        <article class="result-card">
+          <p class="result-label">Total contributed</p>
+          <p class="result-value" id="totalContributed">$0.00</p>
+          <p class="result-caption">Starting amount plus deposits</p>
+        </article>
+        <article class="result-card">
+          <p class="result-label">Interest earned</p>
+          <p class="result-value" id="interestEarned">$0.00</p>
+          <p class="result-caption">Estimated investment growth</p>
+        </article>
+      </div>
+
+      <div class="content-card chart-card">
+        <div class="section-heading chart-heading">
+          <div>
+            <h2>Balance over time</h2>
+            <p>See how contributions and interest build your savings.</p>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="growthChart" aria-label="Line chart showing contributions and interest earned over time" role="img"></canvas>
+        </div>
+        <p class="chart-note">Contributions include your starting amount. The two lines add up to your balance.</p>
+      </div>
+
+      <div class="content-card table-card">
+        <div class="section-heading">
+          <div>
+            <h2>Year-by-year growth</h2>
+            <p>Your estimated savings at the end of each year.</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Year</th>
+                <th scope="col">Contributed</th>
+                <th scope="col">Interest earned</th>
+                <th scope="col">Balance</th>
+              </tr>
+            </thead>
+            <tbody id="yearTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-it-works" aria-labelledby="calculation-heading">
+      <p class="eyebrow">The basics</p>
+      <h2 id="calculation-heading">How this is calculated</h2>
+      <p>
+        We estimate your growth by adding interest to your balance each month, using
+        one-twelfth of the annual return. Then we add that month’s contribution.
+        Because each month’s interest stays in your account, it can earn interest
+        too—that’s compound interest. This estimate assumes your return stays the
+        same and doesn’t account for taxes, fees, or changes in investment value.
+      </p>
+    </section>
+
+    <footer class="page-footer">
+      <p>For illustrative purposes only. This calculator is not financial advice.</p>
+    </footer>
+  </main>
+</body>
+</html>
